@@ -21,6 +21,7 @@ export function LinePlot({
   const y = d3
     .scaleLinear()
     .domain([0, d3.max(data, (d) => +d.value)]) //the + converts strings to numbers
+    .nice()
     .range([height - marginBottom, marginTop]);
 
   const line = d3

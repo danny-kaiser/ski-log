@@ -13,8 +13,17 @@ export default function App() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "dynamicapp/req/CSVDataServlet?Stations=SWM&SensorNums=3&dur_code=D&Start=2025-11-01&End=2026-03-24"
+          "dynamicapp/req/CSVDataServlet?" +
+            new URLSearchParams({
+              Stations: "SLI",
+              SensorNums: "18",
+              dur_code: "H",
+              Start: "2025-11-01",
+              End: "2026-04-01",
+            }).toString()
         );
+        /* Stations=SWM&SensorNums=3&dur_code=D&Start=2025-11-01&End=2026-03-24"*/
+
         if (!response.ok) {
           throw new Error(`HTTP error, status: $(response.status}`);
         }
