@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 
 export function LinePlot({
   data,
@@ -12,15 +12,35 @@ export function LinePlot({
 }) {
   const gx = useRef();
   const gy = useRef();
+  const cleanData = useMemo(() => {
+    const initialParse = data
+      .map((d) => ({
+        ...d,
+        value: +d.value,
+        date: d.date,
+      }))
+      .filter((d) => !isNaN(d.value) && d.value !== null);
+
+    const mu = d3.mean(initialParse, (d) => d.value);
+    const omega = d3.deviation(initialParse, (d) => d.value);
+    const threshold = 3;
+
+    const removeOutliers = initialParse.filter((d) => {
+      const distance = Math.abs(d.value - mu);
+      return distance <= omega * threshold;
+    });
+    return removeOutliers;
+  }, [data]);
+  console.log(cleanData);
 
   const x = d3
     .scaleTime()
-    .domain(d3.extent(data, (d) => d.date))
+    .domain(d3.extent(cleanData, (d) => d.date))
     .range([marginLeft, width - marginRight]);
 
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d) => +d.value)]) //the + converts strings to numbers
+    .domain([0, d3.max(cleanData, (d) => +d.value)]) //the + converts strings to int
     .nice()
     .range([height - marginBottom, marginTop]);
 
@@ -39,10 +59,10 @@ export function LinePlot({
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
-        d={line(data)}
+        d={line(cleanData)}
       />
       <g fill="white" stroke="currentColor" strokeWidth="1.5">
-        {data.map((d, i) => (
+        {cleanData.map((d, i) => (
           <circle key={i} cx={x(d.date)} cy={y(d.value)} r="2.5" />
         ))}
       </g>
